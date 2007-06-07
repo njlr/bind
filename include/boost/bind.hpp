@@ -25,7 +25,6 @@
 #include <boost/ref.hpp>
 #include <boost/mem_fn.hpp>
 #include <boost/type.hpp>
-#include <boost/is_placeholder.hpp>
 #include <boost/bind/arg.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/visit_each.hpp>
@@ -934,31 +933,10 @@ namespace _bi
 
 #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) || (__SUNPRO_CC >= 0x530)
 
-#if defined( __BORLANDC__ ) && BOOST_WORKAROUND( __BORLANDC__, BOOST_TESTED_AT(0x582) )
-
 template<class T> struct add_value
 {
     typedef _bi::value<T> type;
 };
-
-#else
-
-template< class T, int I > struct add_value_2
-{
-    typedef boost::arg<I> type;
-};
-
-template< class T > struct add_value_2< T, 0 >
-{
-    typedef _bi::value< T > type;
-};
-
-template<class T> struct add_value
-{
-    typedef typename add_value_2< T, boost::is_placeholder< T >::value >::type type;
-};
-
-#endif
 
 template<class T> struct add_value< value<T> >
 {
@@ -1181,58 +1159,19 @@ BOOST_BIND_OPERATOR( >=, greater_equal )
 
 #endif
 
-// visit_each, ADL
-
-#if !defined( BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP ) && !defined( __BORLANDC__ ) \
-   && !(defined(__GNUC__) && __GNUC__ == 3 && __GNUC_MINOR__ <= 3)
-
-template<class V, class T> void visit_each( V & v, value<T> const & t, int )
-{
-    using boost::visit_each;
-    BOOST_BIND_VISIT_EACH( v, t.get(), 0 );
-}
-
-template<class V, class R, class F, class L> void visit_each( V & v, bind_t<R, F, L> const & t, int )
-{
-    t.accept( v );
-}
-
-#endif
-
 } // namespace _bi
 
-// visit_each, no ADL
+// visit_each
 
-#if defined( BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP ) || defined( __BORLANDC__ ) \
-  || (defined(__GNUC__) && __GNUC__ == 3 && __GNUC_MINOR__ <= 3)
-
-template<class V, class T> void visit_each( V & v, _bi::value<T> const & t, int )
+template<class V, class T> void visit_each(V & v, _bi::value<T> const & t, int)
 {
-    BOOST_BIND_VISIT_EACH( v, t.get(), 0 );
+    BOOST_BIND_VISIT_EACH(v, t.get(), 0);
 }
 
-template<class V, class R, class F, class L> void visit_each( V & v, _bi::bind_t<R, F, L> const & t, int )
+template<class V, class R, class F, class L> void visit_each(V & v, _bi::bind_t<R, F, L> const & t, int)
 {
-    t.accept( v );
+    t.accept(v);
 }
-
-#endif
-
-// is_bind_expression
-
-template< class T > struct is_bind_expression
-{
-    enum _vt { value = 0 };
-};
-
-#if !defined( BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION )
-
-template< class R, class F, class L > struct is_bind_expression< _bi::bind_t< R, F, L > >
-{
-    enum _vt { value = 1 };
-};
-
-#endif
 
 // bind
 
