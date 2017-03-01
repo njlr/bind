@@ -1,0 +1,8 @@
+{
+  "name": "boost-bind",
+  "dependencies": {
+    "boost-config": "1.63.0",
+    "boost-detail": "1.63.0",
+    "boost-core": "1.63.0"
+  }
+}
